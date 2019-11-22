@@ -65,7 +65,11 @@ public class ListasApp extends Application {
 		
 		quitarButton.disableProperty().bind(nombresListView.getSelectionModel().selectedItemProperty().isNull());
 		
-		nombresListView.itemsProperty().bind(nombres);
+		// sin ordenar
+		// nombresListView.itemsProperty().bind(nombres);
+		
+		// ordenado (a sorted le pasamos el comparador, que debe devolver 0 si o1 == o2, -1 si o1 > o2, y +1 si o1 < o2
+		nombresListView.setItems(nombres.sorted((o1,o2) -> o1.compareTo(o2))); 
 		
 		seleccionado.bind(nombresListView.getSelectionModel().selectedIndexProperty());
 		
