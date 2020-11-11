@@ -27,7 +27,7 @@ public class ListasApp extends Application {
 	// model
 	
 	private ListProperty<String> nombres = new SimpleListProperty<String>(
-				FXCollections.observableArrayList()
+				FXCollections.observableArrayList("Chuck Norris", "Charles Bronson", "Bruce Lee", "Jean-Claude Van Damme")
 			);
 	private IntegerProperty seleccionado = new SimpleIntegerProperty();
 	
