@@ -1,12 +1,15 @@
 package dad.javafx.listas;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Optional;
 
 import javafx.application.Application;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
@@ -26,21 +29,33 @@ public class ListasApp extends Application {
 
 	// model
 	
-	private ListProperty<String> nombres = new SimpleListProperty<String>(
-				FXCollections.observableArrayList("Chuck Norris", "Charles Bronson", "Bruce Lee", "Jean-Claude Van Damme")
-			);
-	private IntegerProperty seleccionado = new SimpleIntegerProperty();
+	private ListProperty<String> nombres = new SimpleListProperty<String>(FXCollections.observableArrayList());
+	private StringProperty seleccionado = new SimpleStringProperty();
 	
 	// view
 	
 	private ListView<String> nombresListView;
 	private Button anadirButton, quitarButton; 
 	
+	
+	@Override
+	public void init() throws Exception {	
+		
+		InputStream nombresStream = getClass().getResourceAsStream("/nombres.csv");
+		BufferedReader reader = new BufferedReader(new InputStreamReader(nombresStream));
+		String line;
+		while ((line = reader.readLine()) != null) {
+			String [] nombre = line.split(",");
+			nombres.add(nombre[0] + " " + nombre[1]);
+		}
+		
+	}
+	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 
 		nombresListView = new ListView<String>();
-		nombresListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		nombresListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		
 		anadirButton = new Button("Añadir");
 
@@ -66,12 +81,12 @@ public class ListasApp extends Application {
 		quitarButton.disableProperty().bind(nombresListView.getSelectionModel().selectedItemProperty().isNull());
 		
 		// sin ordenar
-		// nombresListView.itemsProperty().bind(nombres);
+//		nombresListView.itemsProperty().bind(nombres);
 		
 		// ordenado (a sorted le pasamos el comparador, que debe devolver 0 si o1 == o2, -1 si o1 > o2, y +1 si o1 < o2
-		nombresListView.setItems(nombres.sorted((o1,o2) -> o1.compareTo(o2))); 
+		nombresListView.itemsProperty().bind(new SimpleListProperty<>(nombres.sorted((o1, o2) -> o2.compareTo(o1)))); 
 		
-		seleccionado.bind(nombresListView.getSelectionModel().selectedIndexProperty());
+		seleccionado.bind(nombresListView.getSelectionModel().selectedItemProperty());
 		
 		anadirButton.setOnAction(e -> onAnadirButton(e));
 		quitarButton.setOnAction(e -> onQuitarButton(e));
@@ -86,6 +101,8 @@ public class ListasApp extends Application {
 	
 	private void onNombresChanged(Change<? extends String> c) {
 		while (c.next()) {
+			
+			System.out.println("---> ha habido cambios:");
 			
 			for (String nuevo : c.getAddedSubList()) {
 				System.out.println("se ha añadido " + nuevo);
@@ -104,7 +121,7 @@ public class ListasApp extends Application {
 		dialog.setHeaderText("Añadir un nuevo nombre a la lista");
 		dialog.setContentText("Nombre:");
 		Optional<String> result = dialog.showAndWait();
-		if (result.isPresent()){
+		if (result.isPresent() && !nombres.contains(result.get())) {
 			nombres.add(result.get());
 		}
 	}
